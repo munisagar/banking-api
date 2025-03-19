@@ -12,8 +12,8 @@ steps:
 # Step 1: Checkout the repository
 - checkout: self
 
-# Step 2: Set up Node.js environment
-- task: UseNode@2
+# Step 2: Install Node.js using NodeTool (correct version)
+- task: UseNode@1
   inputs:
     versionSpec: '16.x'  # Ensure this matches the version you're using
     addToPath: true
