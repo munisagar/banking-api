@@ -1,0 +1,50 @@
+trigger:
+- main  # Trigger on changes to the main branch
+
+pool:
+  vmImage: ubuntu-latest  # Default VM image (can be replaced with your self-hosted agent if needed)
+
+variables:
+  NODE_ENV: 'production'
+  DATABASE_URL: 'postgres://postgres:password@db:5432/mydatabase'
+
+steps:
+# Step 1: Checkout the repository
+- checkout: self
+
+# Step 2: Set up Node.js environment
+- task: UseNode@2
+  inputs:
+    versionSpec: '16.x'  # Ensure this matches the version you're using
+    addToPath: true
+
+# Step 3: Install dependencies and run linting
+- script: |
+    npm install
+    npm run lint   # Optional, if you have a linting script
+  displayName: 'Install dependencies and lint code'
+
+# Step 4: Run tests
+- script: |
+    npm test  # Run your tests
+  displayName: 'Run unit tests'
+
+# Step 5: Build Docker image for the app
+- script: |
+    docker-compose -f docker-compose.yml build
+  displayName: 'Build Docker image using docker-compose'
+
+# Step 6: Deploy Docker container (optional, to local or Azure)
+- script: |
+    docker-compose -f docker-compose.yml up -d  # This will start your services in detached mode
+  displayName: 'Deploy app using Docker Compose'
+
+# (Optional) Step 7: Azure Web App deployment (uncomment if deploying to Azure)
+# - task: AzureWebAppContainer@2
+#   inputs:
+#     azureSubscription: 'your-azure-subscription-name'  # Replace with your Azure subscription name
+#     appName: 'your-app-name'  # Replace with your Azure Web App name
+#     containerRegistry: 'your-container-registry'  # Replace with your container registry (if using Azure Container Registry)
+#     imageName: 'your-image-name'  # Replace with the name of your Docker image
+#     tag: 'latest'  # You can set this to other values for versioning
+#   displayName: 'Deploy Docker image to Azure Web App'
